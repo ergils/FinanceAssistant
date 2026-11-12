@@ -104,7 +104,7 @@
           <button type="button" class="secondary" id="clearTxFilter">Reset</button>
         </div>
         <div style="margin-top:10px">
-          <button type="button" class="secondary" id="exportCsv">Ekspor transaksi ke CSV</button>
+          <button type="button" class="secondary" id="exportExcel">Ekspor Excel (.xlsx)</button>
         </div>
         <p id="filterSummary" class="tiny" style="margin:10px 0 0">Menampilkan transaksi terbaru.</p>
         <div id="transactions" style="margin-top:8px"><p class="muted">Memuat transaksi...</p></div>
@@ -204,7 +204,7 @@ function csvCell(value){
   if(/^[=+@\\-\\t\\r]/.test(text)) text="'"+text;
   return '"'+text.replace(/"/g,'""')+'"';
 }
-$('exportCsv').onclick=()=>{
+$('exportExcel').onclick=async()=>{
   const rows=getFilteredTransactions();
   if(rows===null){
     $('filterSummary').textContent='Ekspor dibatalkan: periksa rentang tanggal.';
@@ -214,35 +214,34 @@ $('exportCsv').onclick=()=>{
     $('filterSummary').textContent='Tidak ada transaksi untuk diekspor pada rentang ini.';
     return;
   }
-  const walletNames=Object.fromEntries(wallets.map(w=>[w.id,w.name]));
-  const header=['Tanggal','Jenis','Keterangan','Kategori','Dompet','Jumlah (IDR)'];
-  const delimiter=';';
-  const lines=[header.map(csvCell).join(delimiter)];
-  rows.forEach(t=>{
-    const type=t.type==='income'?'Pemasukan':'Pengeluaran';
-    const values=[
-      t.transaction_date,
-      type,
-      t.description||'',
-      t.category||'',
-      walletNames[t.wallet_id]||'',
-      Number(t.amount||0)
-    ];
-    lines.push(values.map(csvCell).join(delimiter));
-  });
-  const csv='\\uFEFF'+lines.join('\\r\\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const from=$('filterFrom').value||'semua';
-  const to=$('filterTo').value||'semua';
-  a.href=url;
-  a.download=`FinanceAssistant_${from}_${to}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  $('filterSummary').textContent=`Berhasil menyiapkan ${rows.length} transaksi untuk diekspor.`;
+  const button=$('exportExcel');
+  button.disabled=true;
+  button.textContent='Menyiapkan file Excel...';
+  try{
+    const XLSX=await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+    const walletNames=Object.fromEntries(wallets.map(w=>[w.id,w.name]));
+    const data=rows.map(t=>({
+      'Tanggal':t.transaction_date||'',
+      'Jenis':t.type==='income'?'Pemasukan':'Pengeluaran',
+      'Keterangan':t.description||'',
+      'Kategori':t.category||'',
+      'Dompet':walletNames[t.wallet_id]||'',
+      'Jumlah (IDR)':Number(t.amount||0)
+    }));
+    const worksheet=XLSX.utils.json_to_sheet(data);
+    worksheet['!cols']=[{wch:14},{wch:16},{wch:28},{wch:18},{wch:20},{wch:18}];
+    const workbook=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook,worksheet,'Transaksi');
+    const from=$('filterFrom').value||'semua';
+    const to=$('filterTo').value||'semua';
+    XLSX.writeFile(workbook,`FinanceAssistant_${from}_${to}.xlsx`);
+    $('filterSummary').textContent=`File Excel berisi ${rows.length} transaksi sudah disiapkan.`;
+  }catch(error){
+    $('filterSummary').textContent='Gagal membuat Excel. Periksa koneksi internet lalu coba lagi.';
+  }finally{
+    button.disabled=false;
+    button.textContent='Ekspor Excel (.xlsx)';
+  }
 };
 
 function renderReport(allTx){

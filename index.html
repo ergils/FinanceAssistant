@@ -216,7 +216,8 @@ $('exportCsv').onclick=()=>{
   }
   const walletNames=Object.fromEntries(wallets.map(w=>[w.id,w.name]));
   const header=['Tanggal','Jenis','Keterangan','Kategori','Dompet','Jumlah (IDR)'];
-  const lines=[header.map(csvCell).join(',')];
+  const delimiter=';';
+  const lines=[header.map(csvCell).join(delimiter)];
   rows.forEach(t=>{
     const type=t.type==='income'?'Pemasukan':'Pengeluaran';
     const values=[
@@ -227,7 +228,7 @@ $('exportCsv').onclick=()=>{
       walletNames[t.wallet_id]||'',
       Number(t.amount||0)
     ];
-    lines.push(values.map(csvCell).join(','));
+    lines.push(values.map(csvCell).join(delimiter));
   });
   const csv='\\uFEFF'+lines.join('\\r\\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});

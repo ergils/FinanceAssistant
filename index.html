@@ -20,7 +20,7 @@
     button.secondary{background:var(--pale);color:#175b43}button.ghost{background:#eef1ef;color:#314139}
     button:disabled{opacity:.55;cursor:wait}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
     .switch{display:flex;gap:8px}.switch button{flex:1}.switch button.off{background:var(--pale);color:#175b43}
-    .transaction{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.transaction:last-child{border:0}
+    .transaction{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.transaction:last-child{border:0}.report-row{margin:12px 0}.report-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:6px}.bar-bg{height:9px;background:#e8efeb;border-radius:99px;overflow:hidden}.bar-fill{height:100%;background:var(--green);border-radius:99px}
     .amount{font-weight:750;white-space:nowrap}.income{color:var(--green)}.expense{color:#b34a45}
     .hidden{display:none!important}.notice{padding:12px;border-radius:12px;background:#fff6df;color:#6e5314;font-size:13px;margin:12px 0}
     .error{color:#a32e2e;background:#fff0ef;padding:11px;border-radius:10px;font-size:13px}.success{color:#126344;background:#eaf7ef;padding:11px;border-radius:10px;font-size:13px}
@@ -77,6 +77,20 @@
         <p class="muted" id="budgetUsage"></p><div id="budgetMessage"></div>
       </section>
 
+      <div class="topline"><h2>Laporan keuangan</h2><span class="tiny">Ringkasan bulanan</span></div>
+      <section class="card">
+        <label for="reportMonth">Pilih bulan</label><input id="reportMonth" type="month">
+        <div class="stats" style="margin-top:12px">
+          <div class="stat"><small>Pemasukan</small><b id="reportIncome">Rp0</b></div>
+          <div class="stat"><small>Pengeluaran</small><b id="reportExpense">Rp0</b></div>
+        </div>
+        <div style="margin-top:12px;padding:14px;background:#f3f6f4;border-radius:14px">
+          <div class="tiny">Selisih bulan ini</div><b id="reportNet" style="font-size:22px">Rp0</b>
+        </div>
+        <h3 style="font-size:15px;margin:18px 0 8px">Pengeluaran per kategori</h3>
+        <div id="categoryReport" class="muted">Belum ada pengeluaran pada bulan ini.</div>
+      </section>
+
       <h2>Transaksi terbaru</h2>
       <section class="card"><div id="transactions"><p class="muted">Memuat transaksi...</p></div></section>
       <p class="tiny">Data disimpan di Supabase dan dilindungi kebijakan akses per pengguna (RLS). Pastikan selalu keluar jika memakai perangkat bersama.</p>
@@ -93,6 +107,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
 const rupiah = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 const today = new Date();
+const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+$('reportMonth').value = currentMonthKey;
 $('date').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 let currentType = 'expense', wallets = [], currentUser = null;
 
@@ -117,7 +133,7 @@ async function ensureWallet(){
 }
 async function refresh(){
   const [txRes,budgetRes]=await Promise.all([
-    supabase.from('transactions').select('*').order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).limit(100),
+    supabase.from('transactions').select('*').order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).limit(1000),
     supabase.from('budgets').select('*').eq('month_start',monthStart()).maybeSingle()
   ]);
   if(txRes.error) throw txRes.error;
@@ -134,6 +150,23 @@ async function refresh(){
   $('budgetLabel').textContent=budget?rupiah(budget.amount):'Belum diatur';
   $('budgetAmount').value=budget?budget.amount:'';
   $('budgetUsage').textContent=budget?`Terpakai ${rupiah(exp)} dari ${rupiah(budget.amount)} pada bulan ini.`:'';
+  renderReport(tx);
+}
+function renderReport(allTx){
+  const selected=$('reportMonth').value || currentMonthKey;
+  const monthTx=allTx.filter(t=>(t.transaction_date||'').startsWith(selected));
+  const inc=monthTx.filter(t=>t.type==='income').reduce((s,t)=>s+Number(t.amount||0),0);
+  const exp=monthTx.filter(t=>t.type==='expense').reduce((s,t)=>s+Number(t.amount||0),0);
+  const net=inc-exp;
+  $('reportIncome').textContent=rupiah(inc);
+  $('reportExpense').textContent=rupiah(exp);
+  $('reportNet').textContent=(net<0?'−':'')+rupiah(Math.abs(net));
+  $('reportNet').style.color=net<0?'#b34a45':'#167957';
+  const totals={};
+  monthTx.filter(t=>t.type==='expense').forEach(t=>{const key=t.category||'Lainnya';totals[key]=(totals[key]||0)+Number(t.amount||0);});
+  const entries=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  const max=entries.length?entries[0][1]:0;
+  $('categoryReport').innerHTML=entries.length?entries.map(([name,value])=>`<div class="report-row"><div class="report-head"><b>${escapeHtml(name)}</b><span>${rupiah(value)}</span></div><div class="bar-bg"><div class="bar-fill" style="width:${max?Math.max(2,value/max*100):0}%"></div></div></div>`).join(''):'Belum ada pengeluaran pada bulan ini.';
 }
 async function showApp(user){
   currentUser=user;$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('userLabel').textContent=user.email||'Akun aktif';
@@ -170,6 +203,7 @@ $('addWallet').onclick=async()=>{
   if(error){message('txMessage',error.message,true);return;}
   $('walletName').value='';await ensureWallet();message('txMessage','Dompet berhasil ditambahkan.');
 };
+$('reportMonth').addEventListener('change',async()=>{try{const {data,error}=await supabase.from('transactions').select('*').order('transaction_date',{ascending:false}).limit(1000);if(error)throw error;renderReport(data||[]);}catch(e){$('categoryReport').textContent='Gagal memuat laporan: '+(e.message||'kesalahan');}});
 $('saveBudget').onclick=async()=>{
   const amount=Number($('budgetAmount').value);if(!Number.isFinite(amount)||amount<0){message('budgetMessage','Masukkan nominal anggaran yang valid.',true);return;}
   const {error}=await supabase.from('budgets').upsert({user_id:currentUser.id,month_start:monthStart(),amount},{onConflict:'user_id,month_start'});

@@ -103,6 +103,9 @@
           <button type="button" id="applyTxFilter">Terapkan filter</button>
           <button type="button" class="secondary" id="clearTxFilter">Reset</button>
         </div>
+        <div style="margin-top:10px">
+          <button type="button" class="secondary" id="exportCsv">Ekspor transaksi ke CSV</button>
+        </div>
         <p id="filterSummary" class="tiny" style="margin:10px 0 0">Menampilkan transaksi terbaru.</p>
         <div id="transactions" style="margin-top:8px"><p class="muted">Memuat transaksi...</p></div>
       </section>
@@ -166,17 +169,22 @@ async function refresh(){
   $('budgetUsage').textContent=budget?`Terpakai ${rupiah(exp)} dari ${rupiah(budget.amount)} pada bulan ini.`:'';
   renderReport(tx);
 }
+function getFilteredTransactions(){
+  const from=$('filterFrom').value, to=$('filterTo').value;
+  if(from && to && from>to) return null;
+  return cachedTransactions.filter(t=>
+    (!from || (t.transaction_date||'')>=from) &&
+    (!to || (t.transaction_date||'')<=to)
+  );
+}
 function renderTransactions(){
   const from=$('filterFrom').value, to=$('filterTo').value;
-  if(from && to && from>to){
+  const filtered=getFilteredTransactions();
+  if(filtered===null){
     $('filterSummary').textContent='Rentang tanggal tidak valid: tanggal awal melewati tanggal akhir.';
     $('transactions').innerHTML='<p class="muted">Periksa kembali rentang tanggal.</p>';
     return;
   }
-  const filtered=cachedTransactions.filter(t=>
-    (!from || (t.transaction_date||'')>=from) &&
-    (!to || (t.transaction_date||'')<=to)
-  );
   $('filterSummary').textContent=(from||to)
     ? `Menampilkan ${filtered.length} dari ${cachedTransactions.length} transaksi sesuai rentang tanggal.`
     : `Menampilkan ${filtered.length} transaksi terbaru.`;
@@ -189,6 +197,51 @@ $('clearTxFilter').onclick=()=>{
   $('filterFrom').value='';
   $('filterTo').value='';
   renderTransactions();
+};
+function csvCell(value){
+  let text=String(value??'');
+  // Prevent spreadsheet formula execution for text fields.
+  if(/^[=+@\\-\\t\\r]/.test(text)) text="'"+text;
+  return '"'+text.replace(/"/g,'""')+'"';
+}
+$('exportCsv').onclick=()=>{
+  const rows=getFilteredTransactions();
+  if(rows===null){
+    $('filterSummary').textContent='Ekspor dibatalkan: periksa rentang tanggal.';
+    return;
+  }
+  if(!rows.length){
+    $('filterSummary').textContent='Tidak ada transaksi untuk diekspor pada rentang ini.';
+    return;
+  }
+  const walletNames=Object.fromEntries(wallets.map(w=>[w.id,w.name]));
+  const header=['Tanggal','Jenis','Keterangan','Kategori','Dompet','Jumlah (IDR)'];
+  const lines=[header.map(csvCell).join(',')];
+  rows.forEach(t=>{
+    const type=t.type==='income'?'Pemasukan':'Pengeluaran';
+    const values=[
+      t.transaction_date,
+      type,
+      t.description||'',
+      t.category||'',
+      walletNames[t.wallet_id]||'',
+      Number(t.amount||0)
+    ];
+    lines.push(values.map(csvCell).join(','));
+  });
+  const csv='\\uFEFF'+lines.join('\\r\\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const from=$('filterFrom').value||'semua';
+  const to=$('filterTo').value||'semua';
+  a.href=url;
+  a.download=`FinanceAssistant_${from}_${to}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  $('filterSummary').textContent=`Berhasil menyiapkan ${rows.length} transaksi untuk diekspor.`;
 };
 
 function renderReport(allTx){

@@ -87,6 +87,8 @@
         <div style="margin-top:12px;padding:14px;background:#f3f6f4;border-radius:14px">
           <div class="tiny">Selisih bulan ini</div><b id="reportNet" style="font-size:22px">Rp0</b>
         </div>
+        <h3 style="font-size:15px;margin:18px 0 8px">Perbandingan pemasukan dan pengeluaran</h3>
+        <div id="monthlyChart" class="muted">Belum ada data pada bulan ini.</div>
         <h3 style="font-size:15px;margin:18px 0 8px">Pengeluaran per kategori</h3>
         <div id="categoryReport" class="muted">Belum ada pengeluaran pada bulan ini.</div>
       </section>
@@ -162,6 +164,11 @@ function renderReport(allTx){
   $('reportExpense').textContent=rupiah(exp);
   $('reportNet').textContent=(net<0?'−':'')+rupiah(Math.abs(net));
   $('reportNet').style.color=net<0?'#b34a45':'#167957';
+  const chartMax=Math.max(inc,exp);
+  $('monthlyChart').innerHTML=chartMax?[
+    ['Pemasukan',inc,'#167957'],
+    ['Pengeluaran',exp,'#b34a45']
+  ].map(([label,value,color])=>`<div class="report-row"><div class="report-head"><b>${label}</b><span>${rupiah(value)}</span></div><div class="bar-bg" style="height:14px"><div class="bar-fill" style="width:${chartMax?value/chartMax*100:0}%;background:${color}"></div></div></div>`).join(''):'Belum ada data pada bulan ini.';
   const totals={};
   monthTx.filter(t=>t.type==='expense').forEach(t=>{const key=t.category||'Lainnya';totals[key]=(totals[key]||0)+Number(t.amount||0);});
   const entries=Object.entries(totals).sort((a,b)=>b[1]-a[1]);

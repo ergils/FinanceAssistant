@@ -1,0 +1,9 @@
+{
+  "name": "FinanceAssistant",
+  "short_name": "Finance",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f4",
+  "theme_color": "#10251f",
+  "description": "Pencatat keuangan pribadi"
+}

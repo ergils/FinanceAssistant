@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10251f">
+  <title>FinanceAssistant</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root{--bg:#f3f6f4;--card:#fff;--ink:#17251f;--muted:#718078;--green:#167b55;--line:#e4ebe6;--red:#c44b4b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+    header{background:#10251f;color:#fff;padding:22px 18px 26px;border-radius:0 0 24px 24px}
+    .wrap{max-width:720px;margin:auto;padding:0 14px 28px}.top{display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:21px;margin:0}.sub{color:#c2d4ca;font-size:12px;margin-top:5px}
+    .balance{margin-top:22px}.balance small{color:#c2d4ca}.balance strong{display:block;font-size:30px;margin-top:4px}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+    .stat{background:#1b382e;padding:12px;border-radius:14px}.stat small{color:#c2d4ca}.stat b{display:block;margin-top:5px;font-size:17px}
+    main{padding-top:17px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px}
+    h2{font-size:16px;margin:0}.muted{color:var(--muted);font-size:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:12px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    button{border:0;border-radius:12px;padding:12px 14px;font-weight:650;font-size:14px;background:var(--green);color:white}
+    button.secondary{background:#e8f2ed;color:#176344}button.ghost{background:#f0f3f1;color:var(--ink)}
+    input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;background:white;font:inherit;margin-top:6px}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 0}
+    .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .tx{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+    .tx:last-child{border-bottom:0}.txname{font-weight:650}.txmeta{font-size:12px;color:var(--muted);margin-top:3px}
+    .amount{font-weight:700;white-space:nowrap}.income{color:var(--green)}.expense{color:var(--red)}
+    .tabs{position:sticky;bottom:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:7px;display:flex;justify-content:space-around;box-shadow:0 5px 22px #12251b12;margin-top:16px}
+    .tabs button{background:transparent;color:var(--muted);padding:9px 8px;font-size:12px}.tabs button.active{background:#e8f2ed;color:#176344}
+    .hidden{display:none}.notice{font-size:12px;color:var(--muted);line-height:1.5}
+    .budgetbar{height:9px;background:#e9efeb;border-radius:20px;overflow:hidden;margin-top:8px}.budgetbar span{display:block;height:100%;background:var(--green);width:0}
+    @media(min-width:600px){.wrap{padding-left:22px;padding-right:22px}header{padding-left:calc((100% - 676px)/2);padding-right:calc((100% - 676px)/2)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top"><div><h1>FinanceAssistant</h1><div class="sub">Asisten keuangan pribadimu</div></div><div>💚</div></div>
+    <div class="balance"><small>Total saldo semua dompet</small><strong id="balance">Rp0</strong></div>
+    <div class="stats">
+      <div class="stat"><small>↑ Pemasukan bulan ini</small><b id="income">Rp0</b></div>
+      <div class="stat"><small>↓ Pengeluaran bulan ini</small><b id="expense">Rp0</b></div>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+<main>
+  <div class="sectionhead"><h2>Catat transaksi</h2><span class="muted">Versi awal</span></div>
+  <div class="card">
+    <div class="actions">
+      <button onclick="openForm('expense')">− Pengeluaran</button>
+      <button class="secondary" onclick="openForm('income')">＋ Pemasukan</button>
+    </div>
+    <div id="form" class="hidden">
+      <label>Jenis transaksi</label><select id="type"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select>
+      <label>Nominal (Rp)</label><input id="amount" type="number" min="1" inputmode="numeric" placeholder="Contoh: 25000">
+      <label>Keterangan</label><input id="description" placeholder="Contoh: Makan siang">
+      <div class="formgrid">
+        <div><label>Kategori</label><select id="category"><option>Makanan</option><option>Transportasi</option><option>Belanja</option><option>Tagihan</option><option>Gaji</option><option>Lainnya</option></select></div>
+        <div><label>Dompet</label><select id="account"><option>Cash</option><option>BCA</option><option>BRI</option><option>GoPay</option><option>OVO</option></select></div>
+      </div>
+      <label>Tanggal</label><input id="date" type="date">
+      <div class="actions" style="margin-top:13px"><button onclick="saveTransaction()">Simpan</button><button class="ghost" onclick="closeForm()">Batal</button></div>
+      <p class="notice">Data versi awal disimpan di penyimpanan browser pada HP ini saja.</p>
+    </div>
+  </div>
+
+  <div class="sectionhead"><h2>Ringkasan anggaran</h2><span class="muted">Bulan ini</span></div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:8px"><b>Anggaran pengeluaran</b><span id="budgetText" class="muted">Belum diatur</span></div>
+    <div class="budgetbar"><span id="budgetBar"></span></div>
+    <label>Atur anggaran bulanan (Rp)</label>
+    <div class="actions"><input id="budgetInput" type="number" min="0" inputmode="numeric" placeholder="Contoh: 3000000"><button class="secondary" onclick="saveBudget()">Simpan anggaran</button></div>
+  </div>
+
+  <div class="sectionhead"><h2>Transaksi terbaru</h2><button class="ghost" onclick="clearData()" style="padding:7px 10px;font-size:11px">Reset demo</button></div>
+  <div class="card" id="transactions"><div class="notice">Belum ada transaksi. Tambahkan transaksi pertamamu.</div></div>
+
+  <div class="card">
+    <b>Rencana fitur berikutnya</b>
+    <p class="notice">Multi-dompet dengan saldo terpisah, utang/piutang, upload foto struk, laporan grafik, AI chat, sinkronisasi cloud, dan WhatsApp Business akan ditambahkan bertahap. Fitur tersebut belum aktif pada versi awal ini.</p>
+  </div>
+</main>
+<nav class="tabs">
+  <button class="active" onclick="scrollTo(0,0);setTab(this)">⌂<br>Beranda</button>
+  <button onclick="document.getElementById('transactions').scrollIntoView({behavior:'smooth'});setTab(this)">▤<br>Transaksi</button>
+  <button onclick="document.getElementById('budgetInput').scrollIntoView({behavior:'smooth'});setTab(this)">◎<br>Anggaran</button>
+</nav>
+</div>
+<script>
+const KEY='financeassistant_mvp_transactions', BKEY='financeassistant_mvp_budget';
+let tx=JSON.parse(localStorage.getItem(KEY)||'[]');
+const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);
+const monthNow=new Date().toISOString().slice(0,7);
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+document.getElementById('budgetInput').value=localStorage.getItem(BKEY)||'';
+function openForm(type){document.getElementById('form').classList.remove('hidden');document.getElementById('type').value=type;document.getElementById('amount').focus()}
+function closeForm(){document.getElementById('form').classList.add('hidden')}
+function saveTransaction(){
+ const amount=Number(document.getElementById('amount').value), description=document.getElementById('description').value.trim();
+ if(!amount||amount<1||!description){alert('Isi nominal dan keterangan dengan benar.');return}
+ tx.unshift({id:Date.now(),type:document.getElementById('type').value,amount,description,category:document.getElementById('category').value,account:document.getElementById('account').value,date:document.getElementById('date').value});
+ localStorage.setItem(KEY,JSON.stringify(tx));document.getElementById('amount').value='';document.getElementById('description').value='';closeForm();render();
+}
+function saveBudget(){const n=Number(document.getElementById('budgetInput').value);if(n<0){alert('Anggaran tidak valid');return}localStorage.setItem(BKEY,String(n));render()}
+function render(){
+ const month=tx.filter(t=>t.date&&t.date.slice(0,7)===monthNow);
+ const inc=month.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+ const exp=month.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+ const balance=tx.reduce((s,t)=>s+(t.type==='income'?t.amount:-t.amount),0);
+ document.getElementById('balance').textContent=rupiah(balance);
+ document.getElementById('income').textContent=rupiah(inc);
+ document.getElementById('expense').textContent=rupiah(exp);
+ const budget=Number(localStorage.getItem(BKEY)||0);
+ document.getElementById('budgetText').textContent=budget?rupiah(exp)+' / '+rupiah(budget):'Belum diatur';
+ document.getElementById('budgetBar').style.width=budget?Math.min(100,exp/budget*100)+'%':'0%';
+ const el=document.getElementById('transactions');
+ el.innerHTML=tx.length?tx.slice(0,30).map(t=>`<div class="tx"><div><div class="txname">${escapeHtml(t.description)}</div><div class="txmeta">${escapeHtml(t.category)} · ${escapeHtml(t.account)} · ${escapeHtml(t.date)}</div></div><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${rupiah(t.amount)}</div></div>`).join(''):'<div class="notice">Belum ada transaksi. Tambahkan transaksi pertamamu.</div>';
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clearData(){if(confirm('Hapus semua data demo dari browser ini?')){tx=[];localStorage.removeItem(KEY);render()}}
+function setTab(el){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+render();
+</script>
+</body>
+</html>

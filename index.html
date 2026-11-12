@@ -3,127 +3,182 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10251f">
+  <meta name="theme-color" content="#0d2921">
   <title>FinanceAssistant</title>
-  <link rel="manifest" href="manifest.json">
   <style>
-    :root{--bg:#f3f6f4;--card:#fff;--ink:#17251f;--muted:#718078;--green:#167b55;--line:#e4ebe6;--red:#c44b4b}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
-    header{background:#10251f;color:#fff;padding:22px 18px 26px;border-radius:0 0 24px 24px}
-    .wrap{max-width:720px;margin:auto;padding:0 14px 28px}.top{display:flex;justify-content:space-between;align-items:center}
-    h1{font-size:21px;margin:0}.sub{color:#c2d4ca;font-size:12px;margin-top:5px}
-    .balance{margin-top:22px}.balance small{color:#c2d4ca}.balance strong{display:block;font-size:30px;margin-top:4px}
-    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-    .stat{background:#1b382e;padding:12px;border-radius:14px}.stat small{color:#c2d4ca}.stat b{display:block;margin-top:5px;font-size:17px}
-    main{padding-top:17px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px}
-    h2{font-size:16px;margin:0}.muted{color:var(--muted);font-size:12px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:12px}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    button{border:0;border-radius:12px;padding:12px 14px;font-weight:650;font-size:14px;background:var(--green);color:white}
-    button.secondary{background:#e8f2ed;color:#176344}button.ghost{background:#f0f3f1;color:var(--ink)}
-    input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;background:white;font:inherit;margin-top:6px}
-    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 0}
-    .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .tx{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-    .tx:last-child{border-bottom:0}.txname{font-weight:650}.txmeta{font-size:12px;color:var(--muted);margin-top:3px}
-    .amount{font-weight:700;white-space:nowrap}.income{color:var(--green)}.expense{color:var(--red)}
-    .tabs{position:sticky;bottom:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:7px;display:flex;justify-content:space-around;box-shadow:0 5px 22px #12251b12;margin-top:16px}
-    .tabs button{background:transparent;color:var(--muted);padding:9px 8px;font-size:12px}.tabs button.active{background:#e8f2ed;color:#176344}
-    .hidden{display:none}.notice{font-size:12px;color:var(--muted);line-height:1.5}
-    .budgetbar{height:9px;background:#e9efeb;border-radius:20px;overflow:hidden;margin-top:8px}.budgetbar span{display:block;height:100%;background:var(--green);width:0}
-    @media(min-width:600px){.wrap{padding-left:22px;padding-right:22px}header{padding-left:calc((100% - 676px)/2);padding-right:calc((100% - 676px)/2)}}
+    :root{--green:#167957;--dark:#0d2921;--pale:#e8f2ed;--bg:#f3f6f4;--ink:#17251f;--muted:#718078;--line:#e4ebe7}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+    .hero{background:var(--dark);color:white;padding:24px 20px 30px;border-radius:0 0 26px 26px}
+    .wrap{max-width:760px;margin:auto}.brand{font-size:23px;font-weight:750}.sub{color:#bfd0c8;font-size:13px}
+    .balance{margin-top:24px}.balance small,.stat small{color:#c2d3cb}.balance strong{display:block;font-size:34px;margin-top:3px}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.stat{background:#1a3b30;padding:14px;border-radius:15px}.stat b{display:block;margin-top:4px;font-size:19px}
+    main{padding:18px 14px 40px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;margin:14px 0}
+    h2{font-size:17px;margin:18px 3px 10px}.muted{color:var(--muted);font-size:13px}
+    label{display:block;color:var(--muted);font-size:12px;margin:12px 0 5px}
+    input,select,button{font:inherit}input,select{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink)}
+    button{border:0;border-radius:12px;padding:13px 16px;background:var(--green);color:white;font-weight:650;cursor:pointer}
+    button.secondary{background:var(--pale);color:#175b43}button.ghost{background:#eef1ef;color:#314139}
+    button:disabled{opacity:.55;cursor:wait}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+    .switch{display:flex;gap:8px}.switch button{flex:1}.switch button.off{background:var(--pale);color:#175b43}
+    .transaction{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.transaction:last-child{border:0}
+    .amount{font-weight:750;white-space:nowrap}.income{color:var(--green)}.expense{color:#b34a45}
+    .hidden{display:none!important}.notice{padding:12px;border-radius:12px;background:#fff6df;color:#6e5314;font-size:13px;margin:12px 0}
+    .error{color:#a32e2e;background:#fff0ef;padding:11px;border-radius:10px;font-size:13px}.success{color:#126344;background:#eaf7ef;padding:11px;border-radius:10px;font-size:13px}
+    .topline{display:flex;align-items:center;justify-content:space-between;gap:10px}.tiny{font-size:12px;color:var(--muted)}
+    .auth{max-width:460px;margin:35px auto;padding:0 16px}.auth .card{padding:22px}.auth h1{font-size:24px;margin:0}
+    @media(min-width:650px){main{padding-left:20px;padding-right:20px}.hero{padding-left:24px;padding-right:24px}}
   </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <div class="top"><div><h1>FinanceAssistant</h1><div class="sub">Asisten keuangan pribadimu</div></div><div>💚</div></div>
-    <div class="balance"><small>Total saldo semua dompet</small><strong id="balance">Rp0</strong></div>
-    <div class="stats">
-      <div class="stat"><small>↑ Pemasukan bulan ini</small><b id="income">Rp0</b></div>
-      <div class="stat"><small>↓ Pengeluaran bulan ini</small><b id="expense">Rp0</b></div>
+  <section id="authView" class="auth">
+    <div class="card">
+      <h1>FinanceAssistant</h1><p class="muted">Asisten keuangan pribadimu</p>
+      <div id="authMessage"></div>
+      <form id="authForm">
+        <label>Email</label><input id="email" type="email" autocomplete="email" required placeholder="nama@email.com">
+        <label>Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimal 6 karakter">
+        <div class="row" style="margin-top:16px"><button type="submit" id="loginBtn">Masuk</button><button type="button" class="secondary" id="signupBtn">Daftar</button></div>
+      </form>
+      <p class="tiny">Gunakan akun milikmu sendiri. Jangan bagikan password kepada siapa pun.</p>
     </div>
-  </div>
-</header>
-<div class="wrap">
-<main>
-  <div class="sectionhead"><h2>Catat transaksi</h2><span class="muted">Versi awal</span></div>
-  <div class="card">
-    <div class="actions">
-      <button onclick="openForm('expense')">− Pengeluaran</button>
-      <button class="secondary" onclick="openForm('income')">＋ Pemasukan</button>
-    </div>
-    <div id="form" class="hidden">
-      <label>Jenis transaksi</label><select id="type"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select>
-      <label>Nominal (Rp)</label><input id="amount" type="number" min="1" inputmode="numeric" placeholder="Contoh: 25000">
-      <label>Keterangan</label><input id="description" placeholder="Contoh: Makan siang">
-      <div class="formgrid">
-        <div><label>Kategori</label><select id="category"><option>Makanan</option><option>Transportasi</option><option>Belanja</option><option>Tagihan</option><option>Gaji</option><option>Lainnya</option></select></div>
-        <div><label>Dompet</label><select id="account"><option>Cash</option><option>BCA</option><option>BRI</option><option>GoPay</option><option>OVO</option></select></div>
-      </div>
-      <label>Tanggal</label><input id="date" type="date">
-      <div class="actions" style="margin-top:13px"><button onclick="saveTransaction()">Simpan</button><button class="ghost" onclick="closeForm()">Batal</button></div>
-      <p class="notice">Data versi awal disimpan di penyimpanan browser pada HP ini saja.</p>
-    </div>
+  </section>
+
+  <div id="appView" class="hidden">
+    <header class="hero"><div class="wrap">
+      <div class="topline"><div><div class="brand">FinanceAssistant 💚</div><div class="sub">Asisten keuangan pribadimu · tersinkron online</div></div><button class="ghost" id="logoutBtn">Keluar</button></div>
+      <div class="balance"><small>Total saldo semua dompet</small><strong id="balance">Rp0</strong></div>
+      <div class="stats"><div class="stat"><small>↑ Pemasukan bulan ini</small><b id="income">Rp0</b></div><div class="stat"><small>↓ Pengeluaran bulan ini</small><b id="expense">Rp0</b></div></div>
+    </div></header>
+    <main class="wrap">
+      <div class="topline"><h2>Catat transaksi</h2><span class="tiny" id="userLabel"></span></div>
+      <section class="card">
+        <form id="transactionForm">
+          <div class="switch"><button type="button" id="expenseMode" class="off">− Pengeluaran</button><button type="button" id="incomeMode">＋ Pemasukan</button></div>
+          <label>Nominal (Rp)</label><input id="amount" type="number" min="1" step="1" required placeholder="Contoh: 25000">
+          <label>Keterangan</label><input id="description" maxlength="120" placeholder="Contoh: Makan siang">
+          <div class="row"><div><label>Kategori</label><select id="category"><option>Makanan</option><option>Transportasi</option><option>Belanja</option><option>Tagihan</option><option>Kesehatan</option><option>Pendidikan</option><option>Gaji</option><option>Hadiah</option><option>Lainnya</option></select></div>
+          <div><label>Dompet</label><select id="wallet"></select></div></div>
+          <label>Tanggal</label><input id="date" type="date" required>
+          <div style="margin-top:14px"><button id="saveTx" type="submit" style="width:100%">Simpan transaksi</button></div>
+        </form>
+        <div id="txMessage"></div>
+      </section>
+
+      <div class="topline"><h2>Dompet</h2></div>
+      <section class="card">
+        <div class="row"><div><label>Nama dompet baru</label><input id="walletName" placeholder="Contoh: Tabungan"></div><div style="align-self:end"><button id="addWallet" style="width:100%">Tambah</button></div></div>
+        <div id="walletList" class="muted" style="margin-top:12px"></div>
+      </section>
+
+      <div class="topline"><h2>Anggaran pengeluaran</h2><span class="tiny">Bulan ini</span></div>
+      <section class="card">
+        <div class="topline"><b>Anggaran bulanan</b><span id="budgetLabel" class="tiny">Belum diatur</span></div>
+        <label>Atur anggaran (Rp)</label><div class="row"><input id="budgetAmount" type="number" min="0" placeholder="Contoh: 3000000"><button id="saveBudget">Simpan</button></div>
+        <p class="muted" id="budgetUsage"></p><div id="budgetMessage"></div>
+      </section>
+
+      <h2>Transaksi terbaru</h2>
+      <section class="card"><div id="transactions"><p class="muted">Memuat transaksi...</p></div></section>
+      <p class="tiny">Data disimpan di Supabase dan dilindungi kebijakan akses per pengguna (RLS). Pastikan selalu keluar jika memakai perangkat bersama.</p>
+    </main>
   </div>
 
-  <div class="sectionhead"><h2>Ringkasan anggaran</h2><span class="muted">Bulan ini</span></div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;gap:8px"><b>Anggaran pengeluaran</b><span id="budgetText" class="muted">Belum diatur</span></div>
-    <div class="budgetbar"><span id="budgetBar"></span></div>
-    <label>Atur anggaran bulanan (Rp)</label>
-    <div class="actions"><input id="budgetInput" type="number" min="0" inputmode="numeric" placeholder="Contoh: 3000000"><button class="secondary" onclick="saveBudget()">Simpan anggaran</button></div>
-  </div>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  <div class="sectionhead"><h2>Transaksi terbaru</h2><button class="ghost" onclick="clearData()" style="padding:7px 10px;font-size:11px">Reset demo</button></div>
-  <div class="card" id="transactions"><div class="notice">Belum ada transaksi. Tambahkan transaksi pertamamu.</div></div>
+const SUPABASE_URL = 'https://yeysknetcpbhnfrjbnkp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_eXF5VjrBMl8v0ZginVeOow_vWU-DoHT';
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  <div class="card">
-    <b>Rencana fitur berikutnya</b>
-    <p class="notice">Multi-dompet dengan saldo terpisah, utang/piutang, upload foto struk, laporan grafik, AI chat, sinkronisasi cloud, dan WhatsApp Business akan ditambahkan bertahap. Fitur tersebut belum aktif pada versi awal ini.</p>
-  </div>
-</main>
-<nav class="tabs">
-  <button class="active" onclick="scrollTo(0,0);setTab(this)">⌂<br>Beranda</button>
-  <button onclick="document.getElementById('transactions').scrollIntoView({behavior:'smooth'});setTab(this)">▤<br>Transaksi</button>
-  <button onclick="document.getElementById('budgetInput').scrollIntoView({behavior:'smooth'});setTab(this)">◎<br>Anggaran</button>
-</nav>
-</div>
-<script>
-const KEY='financeassistant_mvp_transactions', BKEY='financeassistant_mvp_budget';
-let tx=JSON.parse(localStorage.getItem(KEY)||'[]');
-const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);
-const monthNow=new Date().toISOString().slice(0,7);
-document.getElementById('date').value=new Date().toISOString().slice(0,10);
-document.getElementById('budgetInput').value=localStorage.getItem(BKEY)||'';
-function openForm(type){document.getElementById('form').classList.remove('hidden');document.getElementById('type').value=type;document.getElementById('amount').focus()}
-function closeForm(){document.getElementById('form').classList.add('hidden')}
-function saveTransaction(){
- const amount=Number(document.getElementById('amount').value), description=document.getElementById('description').value.trim();
- if(!amount||amount<1||!description){alert('Isi nominal dan keterangan dengan benar.');return}
- tx.unshift({id:Date.now(),type:document.getElementById('type').value,amount,description,category:document.getElementById('category').value,account:document.getElementById('account').value,date:document.getElementById('date').value});
- localStorage.setItem(KEY,JSON.stringify(tx));document.getElementById('amount').value='';document.getElementById('description').value='';closeForm();render();
+const $ = id => document.getElementById(id);
+const rupiah = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+const today = new Date();
+$('date').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+let currentType = 'expense', wallets = [], currentUser = null;
+
+function message(id, text, isError=false){$(id).innerHTML = `<div class="${isError?'error':'success'}" style="margin-top:12px">${escapeHtml(text)}</div>`;}
+function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function monthStart(){return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;}
+function setType(type){currentType=type;$('expenseMode').classList.toggle('off',type!=='expense');$('incomeMode').classList.toggle('off',type!=='income');}
+$('expenseMode').onclick=()=>setType('expense');$('incomeMode').onclick=()=>setType('income');
+
+async function ensureWallet(){
+  const {data,error}=await supabase.from('wallets').select('*').order('created_at');
+  if(error) throw error;
+  wallets=data||[];
+  if(!wallets.length){
+    const {error:insertError}=await supabase.from('wallets').insert({user_id:currentUser.id,name:'Cash',opening_balance:0});
+    if(insertError) throw insertError;
+    const result=await supabase.from('wallets').select('*').order('created_at');
+    if(result.error) throw result.error; wallets=result.data||[];
+  }
+  $('wallet').innerHTML=wallets.map(w=>`<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('');
+  $('walletList').innerHTML=wallets.map(w=>`• ${escapeHtml(w.name)} — saldo awal ${rupiah(w.opening_balance)}`).join('<br>');
 }
-function saveBudget(){const n=Number(document.getElementById('budgetInput').value);if(n<0){alert('Anggaran tidak valid');return}localStorage.setItem(BKEY,String(n));render()}
-function render(){
- const month=tx.filter(t=>t.date&&t.date.slice(0,7)===monthNow);
- const inc=month.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
- const exp=month.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
- const balance=tx.reduce((s,t)=>s+(t.type==='income'?t.amount:-t.amount),0);
- document.getElementById('balance').textContent=rupiah(balance);
- document.getElementById('income').textContent=rupiah(inc);
- document.getElementById('expense').textContent=rupiah(exp);
- const budget=Number(localStorage.getItem(BKEY)||0);
- document.getElementById('budgetText').textContent=budget?rupiah(exp)+' / '+rupiah(budget):'Belum diatur';
- document.getElementById('budgetBar').style.width=budget?Math.min(100,exp/budget*100)+'%':'0%';
- const el=document.getElementById('transactions');
- el.innerHTML=tx.length?tx.slice(0,30).map(t=>`<div class="tx"><div><div class="txname">${escapeHtml(t.description)}</div><div class="txmeta">${escapeHtml(t.category)} · ${escapeHtml(t.account)} · ${escapeHtml(t.date)}</div></div><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${rupiah(t.amount)}</div></div>`).join(''):'<div class="notice">Belum ada transaksi. Tambahkan transaksi pertamamu.</div>';
+async function refresh(){
+  const [txRes,budgetRes]=await Promise.all([
+    supabase.from('transactions').select('*').order('transaction_date',{ascending:false}).order('created_at',{ascending:false}).limit(100),
+    supabase.from('budgets').select('*').eq('month_start',monthStart()).maybeSingle()
+  ]);
+  if(txRes.error) throw txRes.error;
+  if(budgetRes.error) throw budgetRes.error;
+  const tx=txRes.data||[];
+  const walletStart=wallets.reduce((a,w)=>a+Number(w.opening_balance||0),0);
+  const balance=walletStart+tx.reduce((a,t)=>a+(t.type==='income'?1:-1)*Number(t.amount),0);
+  const month=tx.filter(t=>t.transaction_date?.startsWith(monthStart().slice(0,7)));
+  const inc=month.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
+  const exp=month.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount),0);
+  $('balance').textContent=rupiah(balance);$('income').textContent=rupiah(inc);$('expense').textContent=rupiah(exp);
+  $('transactions').innerHTML=tx.length?tx.map(t=>`<div class="transaction"><div><b>${escapeHtml(t.description||t.category)}</b><div class="tiny">${escapeHtml(t.category)} · ${escapeHtml(t.transaction_date)}</div></div><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${rupiah(t.amount)}</div></div>`).join(''):'<p class="muted">Belum ada transaksi. Tambahkan transaksi pertamamu.</p>';
+  const budget=budgetRes.data;
+  $('budgetLabel').textContent=budget?rupiah(budget.amount):'Belum diatur';
+  $('budgetAmount').value=budget?budget.amount:'';
+  $('budgetUsage').textContent=budget?`Terpakai ${rupiah(exp)} dari ${rupiah(budget.amount)} pada bulan ini.`:'';
 }
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function clearData(){if(confirm('Hapus semua data demo dari browser ini?')){tx=[];localStorage.removeItem(KEY);render()}}
-function setTab(el){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-render();
+async function showApp(user){
+  currentUser=user;$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('userLabel').textContent=user.email||'Akun aktif';
+  try{await ensureWallet();await refresh();}catch(e){message('txMessage',e.message||'Gagal memuat data. Periksa kebijakan database.',true);}
+}
+$('authForm').addEventListener('submit',async e=>{
+  e.preventDefault();$('loginBtn').disabled=true;
+  const {data,error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+  $('loginBtn').disabled=false;
+  if(error){message('authMessage',error.message,true);return;} await showApp(data.user);
+});
+$('signupBtn').onclick=async()=>{
+  const email=$('email').value.trim(),password=$('password').value;
+  if(!email||password.length<6){message('authMessage','Isi email dan password minimal 6 karakter.',true);return;}
+  $('signupBtn').disabled=true;
+  const {data,error}=await supabase.auth.signUp({email,password});
+  $('signupBtn').disabled=false;
+  if(error){message('authMessage',error.message,true);return;}
+  if(data.session) await showApp(data.user);
+  else message('authMessage','Pendaftaran berhasil. Periksa email untuk konfirmasi, lalu masuk.');
+};
+$('logoutBtn').onclick=async()=>{await supabase.auth.signOut();location.reload();};
+$('transactionForm').onsubmit=async e=>{
+  e.preventDefault();$('saveTx').disabled=true;
+  const payload={user_id:currentUser.id,wallet_id:$('wallet').value,type:currentType,amount:Number($('amount').value),description:$('description').value.trim(),category:$('category').value,transaction_date:$('date').value};
+  const {error}=await supabase.from('transactions').insert(payload);
+  $('saveTx').disabled=false;
+  if(error){message('txMessage',error.message,true);return;}
+  $('amount').value='';$('description').value='';message('txMessage','Transaksi berhasil disimpan.');await refresh();
+};
+$('addWallet').onclick=async()=>{
+  const name=$('walletName').value.trim();if(!name)return;
+  const {error}=await supabase.from('wallets').insert({user_id:currentUser.id,name,opening_balance:0});
+  if(error){message('txMessage',error.message,true);return;}
+  $('walletName').value='';await ensureWallet();message('txMessage','Dompet berhasil ditambahkan.');
+};
+$('saveBudget').onclick=async()=>{
+  const amount=Number($('budgetAmount').value);if(!Number.isFinite(amount)||amount<0){message('budgetMessage','Masukkan nominal anggaran yang valid.',true);return;}
+  const {error}=await supabase.from('budgets').upsert({user_id:currentUser.id,month_start:monthStart(),amount},{onConflict:'user_id,month_start'});
+  if(error){message('budgetMessage',error.message,true);return;}
+  message('budgetMessage','Anggaran berhasil disimpan.');await refresh();
+};
+const {data:{session}}=await supabase.auth.getSession();
+if(session) await showApp(session.user);
+supabase.auth.onAuthStateChange((_event,session)=>{if(!session){$('appView').classList.add('hidden');$('authView').classList.remove('hidden');}});
 </script>
 </body>
 </html>

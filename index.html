@@ -93,8 +93,19 @@
         <div id="categoryReport" class="muted">Belum ada pengeluaran pada bulan ini.</div>
       </section>
 
-      <h2>Transaksi terbaru</h2>
-      <section class="card"><div id="transactions"><p class="muted">Memuat transaksi...</p></div></section>
+      <h2>Riwayat transaksi</h2>
+      <section class="card">
+        <div class="row">
+          <div><label for="filterFrom">Dari tanggal</label><input id="filterFrom" type="date"></div>
+          <div><label for="filterTo">Sampai tanggal</label><input id="filterTo" type="date"></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button type="button" id="applyTxFilter">Terapkan filter</button>
+          <button type="button" class="secondary" id="clearTxFilter">Reset</button>
+        </div>
+        <p id="filterSummary" class="tiny" style="margin:10px 0 0">Menampilkan transaksi terbaru.</p>
+        <div id="transactions" style="margin-top:8px"><p class="muted">Memuat transaksi...</p></div>
+      </section>
       <p class="tiny">Data disimpan di Supabase dan dilindungi kebijakan akses per pengguna (RLS). Pastikan selalu keluar jika memakai perangkat bersama.</p>
     </main>
   </div>
@@ -112,7 +123,7 @@ const today = new Date();
 const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
 $('reportMonth').value = currentMonthKey;
 $('date').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-let currentType = 'expense', wallets = [], currentUser = null;
+let currentType = 'expense', wallets = [], currentUser = null, cachedTransactions = [];
 
 function message(id, text, isError=false){$(id).innerHTML = `<div class="${isError?'error':'success'}" style="margin-top:12px">${escapeHtml(text)}</div>`;}
 function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -141,19 +152,45 @@ async function refresh(){
   if(txRes.error) throw txRes.error;
   if(budgetRes.error) throw budgetRes.error;
   const tx=txRes.data||[];
+  cachedTransactions = tx;
+  renderTransactions();
   const walletStart=wallets.reduce((a,w)=>a+Number(w.opening_balance||0),0);
   const balance=walletStart+tx.reduce((a,t)=>a+(t.type==='income'?1:-1)*Number(t.amount),0);
   const month=tx.filter(t=>t.transaction_date?.startsWith(monthStart().slice(0,7)));
   const inc=month.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0);
   const exp=month.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount),0);
   $('balance').textContent=rupiah(balance);$('income').textContent=rupiah(inc);$('expense').textContent=rupiah(exp);
-  $('transactions').innerHTML=tx.length?tx.map(t=>`<div class="transaction"><div><b>${escapeHtml(t.description||t.category)}</b><div class="tiny">${escapeHtml(t.category)} · ${escapeHtml(t.transaction_date)}</div></div><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${rupiah(t.amount)}</div></div>`).join(''):'<p class="muted">Belum ada transaksi. Tambahkan transaksi pertamamu.</p>';
   const budget=budgetRes.data;
   $('budgetLabel').textContent=budget?rupiah(budget.amount):'Belum diatur';
   $('budgetAmount').value=budget?budget.amount:'';
   $('budgetUsage').textContent=budget?`Terpakai ${rupiah(exp)} dari ${rupiah(budget.amount)} pada bulan ini.`:'';
   renderReport(tx);
 }
+function renderTransactions(){
+  const from=$('filterFrom').value, to=$('filterTo').value;
+  if(from && to && from>to){
+    $('filterSummary').textContent='Rentang tanggal tidak valid: tanggal awal melewati tanggal akhir.';
+    $('transactions').innerHTML='<p class="muted">Periksa kembali rentang tanggal.</p>';
+    return;
+  }
+  const filtered=cachedTransactions.filter(t=>
+    (!from || (t.transaction_date||'')>=from) &&
+    (!to || (t.transaction_date||'')<=to)
+  );
+  $('filterSummary').textContent=(from||to)
+    ? `Menampilkan ${filtered.length} dari ${cachedTransactions.length} transaksi sesuai rentang tanggal.`
+    : `Menampilkan ${filtered.length} transaksi terbaru.`;
+  $('transactions').innerHTML=filtered.length
+    ? filtered.map(t=>`<div class="transaction"><div><b>${escapeHtml(t.description||t.category)}</b><div class="tiny">${escapeHtml(t.category)} · ${escapeHtml(t.transaction_date)}</div></div><div class="amount ${t.type==='income'?'income':'expense'}">${t.type==='income'?'+':'−'}${rupiah(t.amount)}</div></div>`).join('')
+    : '<p class="muted">Tidak ada transaksi pada rentang tanggal ini.</p>';
+}
+$('applyTxFilter').onclick=renderTransactions;
+$('clearTxFilter').onclick=()=>{
+  $('filterFrom').value='';
+  $('filterTo').value='';
+  renderTransactions();
+};
+
 function renderReport(allTx){
   const selected=$('reportMonth').value || currentMonthKey;
   const monthTx=allTx.filter(t=>(t.transaction_date||'').startsWith(selected));

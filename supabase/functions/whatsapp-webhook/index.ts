@@ -1,4 +1,4 @@
-
+import { parseTransaction } from "./parser.ts";
 // Prototipe penerima WhatsApp Cloud API.
 // Belum menyimpan transaksi ke database.
 

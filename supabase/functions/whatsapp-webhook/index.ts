@@ -49,7 +49,7 @@ async function verifySignature(body: string, signature: string) {
 }
 
 function parseTransaction(text: string) {
-  const kind = /\b(pemasukan|masuk|income|gaji|diterima)\b/i.test(text)
+  const kind = /\b(pemasukan|masuk|income|diterima)\b/i.test(text)
     ? "income"
     : /\b(pengeluaran|keluar|expense|belanja|beli|bayar)\b/i.test(text)
     ? "expense"
@@ -84,7 +84,7 @@ function parseTransaction(text: string) {
   const description = text
     .replace(match[0], "")
     .replace(
-      /\b(pemasukan|masuk|income|gaji|diterima|pengeluaran|keluar|expense|belanja|beli|bayar)\b/gi,
+      /\b(pemasukan|masuk|income|diterima|pengeluaran|keluar|expense|belanja|beli|bayar)\b/gi,
       "",
     )
     .replace(/[,:;\-]/g, " ")

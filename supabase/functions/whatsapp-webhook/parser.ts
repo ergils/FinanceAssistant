@@ -18,7 +18,7 @@ export function parseTransaction(
   if (!kind) return null;
 
   const match = text.match(
-    /(?:rp\s*)?([0-9][0-9.,]*(?:\s*(?:rb|ribu|jt|juta|k|m))?)/i,
+    /(?:rp\s*)?([0-9][0-9.,]*(?:\s*(?:rb|ribu|jt|juta|k|m)\b)?)/i,
   );
 
   if (!match) return null;

@@ -1,0 +1,27 @@
+
+name: WhatsApp Parser Tests
+
+on:
+  push:
+    branches:
+      - feature/whatsapp-parser-test
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-parser:
+    name: Test Transaction Parser
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run parser tests
+        run: deno test supabase/functions/whatsapp-webhook/parser_test.ts

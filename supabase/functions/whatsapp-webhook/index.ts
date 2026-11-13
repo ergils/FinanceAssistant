@@ -64,7 +64,9 @@ function parseTransaction(text: string) {
   if (!match) return null;
 
   const token = match[1].replace(/\s/g, "").toLowerCase();
-  const suffix = token.match(/(rb|ribu|jt|juta|k|m)$/)?.[1] ?? "";
+  const suffix = /[a-z]$/.test(token)
+  ? (token.match(/(ribu|juta|rb|jt|k|m)$/)?.[1] ?? "")
+  : "";
   const numberPart = suffix ? token.slice(0, -suffix.length) : token;
   const digits = numberPart.replace(/[.,]/g, "");
 
